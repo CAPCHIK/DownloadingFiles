@@ -9,6 +9,7 @@ namespace DownloadingFiles
 { 
     class MainVM : INotifyPropertyChanged
     {
+        public string Error => Model.Error;
         private string _url;
         public string URL
         {
@@ -41,13 +42,13 @@ namespace DownloadingFiles
         {
             if (_url != null)
             {
-                Model.SelectFolder();
-                Model.DownloadFile(_url);
+                Model.DownloadFile(_url, _openDownloadedFile);
             }
+            OnPropertyChanged("Error");
         }
-        public string Error => Model.Error;
+
         public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string prop="")
+        protected virtual void OnPropertyChanged(string prop = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
