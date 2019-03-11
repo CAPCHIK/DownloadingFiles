@@ -51,7 +51,8 @@ namespace DownloadingFiles
             OnPropertyChanged("LoadPercentage");
         }
 
-        public string LoadPercentage => Model.BytesRecieved + "/\n" + Model.BytesTotal;
+        public string LoadPercentage => Model.BytesRecieved;
+        
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string prop = "")

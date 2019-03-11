@@ -15,7 +15,6 @@ namespace DownloadingFiles
     {
         public static WebClient wc = new WebClient();
         public static string Error;
-        public static string str;
         public static string FilePath;
         private static string _bytesRecieved;
         private static string _bytesTotal;
@@ -39,7 +38,7 @@ namespace DownloadingFiles
                 Error = "";
                 wc.Proxy = null;
                 SelectFolder(url);
-                wc.DownloadProgressChanged += OnDownloadProgressChanged;
+                wc.DownloadProgressChanged += new DownloadProgressChangedEventHandler(OnDownloadProgressChanged);
                 wc.DownloadFileAsync(new Uri(url), FilePath);
                 if (openDownloadFile == true)
                 {
@@ -78,10 +77,10 @@ namespace DownloadingFiles
             }
         }
 
-        private static void OnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        public static void OnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            BytesRecieved = e.BytesReceived.ToString();
-            BytesTotal = e.TotalBytesToReceive.ToString();
+            _bytesRecieved = e.BytesReceived.ToString();
+            _bytesTotal = e.TotalBytesToReceive.ToString();
         }
     }
 }
