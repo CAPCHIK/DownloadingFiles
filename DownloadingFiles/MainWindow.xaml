@@ -6,6 +6,9 @@
         xmlns:local="clr-namespace:DownloadingFiles"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+    <Window.DataContext>
+        <local:MainVM/>
+    </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition></RowDefinition>
@@ -18,15 +21,15 @@
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="URL" FontSize="40" BorderThickness="20" BorderBrush="#816EAE" Margin="0,0,28.8,104.6" Grid.RowSpan="2"/>
-        <Button Grid.Row="0" Grid.Column="2" Content="DOWNLOAD" FontSize="30" BorderThickness="20" BorderBrush="#816EAE" Background="White" FontFamily="./#Sochi2014"/>
-        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" FontSize="30" Content="Открыть после скачивания" Margin="24,38.2,28.8,9.6" FontFamily="./#Sochi2014"/>
-        <Label Grid.Row="2" Grid.Column="0" Content="Оставшееся время:" FontSize="30" Margin="20,60.4,28.8,0.2" FontFamily="./#Sochi2014" Grid.ColumnSpan="2"/>
-        <Label Grid.Row="2" Grid.Column="2" Content="Скорость загрузки" FontSize="30" Margin="15.2,40.4,-0.4,102" RenderTransformOrigin="0.508,1.611" Grid.RowSpan="2" FontFamily="./#Sochi2014"/>
-        <Border Grid.Row="2" Grid.Column="2" Grid.RowSpan="2" BorderThickness="20" BorderBrush="#816EAE"/>
-        <ProgressBar Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Value="40" Foreground="#AAA1C8" Margin="0,9.8,28.8,0"/>
-        <Border Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2" BorderBrush="#816EAE" BorderThickness="20" Margin="0,105.4,28.8,0" Grid.RowSpan="2"/>
-        <Border Grid.Column="0" Grid.ColumnSpan="2" Grid.RowSpan="4" BorderThickness="20" BorderBrush="#816EAE" Margin="0,98,28.8,2" Height="320"/>
-        <Label Grid.Row="3" Grid.Column="2"   Content="Скачанные мб/&#10;Всего мб" FontSize="30" FontFamily="./#Sochi2014" Margin="15, 0, 0, 0"/>
+        <TextBox Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding URL, UpdateSourceTrigger=PropertyChanged}"
+            FontSize="40"/>
+        <Button Grid.Row="0" Grid.Column="2" Content="DOWNLOAD" FontSize="30" FontFamily="./#Sochi2014" Command="{Binding UpdateCommand}"/>
+        <Label Grid.Row="1" Grid.Column="2" Content="{Binding Error, Mode=OneWay}" FontFamily="./#Sochi2014" />
+        <CheckBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" FontSize="30" Content="Открыть после скачивания"
+                  IsChecked="{Binding OpenDownloadedFile, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" FontFamily="./#Sochi2014"/>
+        <Label Grid.Row="2" Grid.Column="0" Content="{Binding TimeLeft, Mode=OneWay}" FontSize="30" FontFamily="./#Sochi2014"/>
+        <Label Grid.Row="2" Grid.Column="2" Content="{Binding Speed, Mode=OneWay}" FontSize="30" FontFamily="./#Sochi2014"/>
+        <ProgressBar Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="2" Value="{Binding ProgressBarValue}" Foreground="#AAA1C8"/>
+        <Label Grid.Row="3" Grid.Column="2" Content="{Binding LoadPercentage}" FontSize="30" FontFamily="./#Sochi2014" Margin="15, 0, 0, 0"/>
     </Grid>
 </Window>
