@@ -15,7 +15,10 @@ namespace DownloadingFiles
     {
         public static WebClient wc = new WebClient();
         public static string Error;
+        public static string str;
         public static string FilePath;
+        private static string _bytesRecieved;
+        private static string _bytesTotal;
         public static void SelectFolder(string url)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
@@ -28,14 +31,16 @@ namespace DownloadingFiles
                 FilePath = saveFileDialog.FileName;
             }
         }
-        public static void DownloadFile(string url, bool openDownloadFile)
+        public static void DownloadFile(string url, bool openDownloadFile) 
         {
             try
-            {            
-                string HTMLSource = wc.DownloadString(url);     
+            {
+                string HTMLSource = wc.DownloadString(url);
                 Error = "";
+                wc.Proxy = null;
                 SelectFolder(url);
-                wc.DownloadFile(url, FilePath);
+                wc.DownloadProgressChanged += OnDownloadProgressChanged;
+                wc.DownloadFileAsync(new Uri(url), FilePath);
                 if (openDownloadFile == true)
                 {
                     OpenFile(url);
@@ -53,6 +58,30 @@ namespace DownloadingFiles
         public static void OpenFile(string url)
         {
             Process.Start(FilePath);
+        }
+
+        public static string BytesRecieved
+        {
+            get { return _bytesRecieved; }
+            set
+            {
+                _bytesRecieved = value;
+            }
+        }
+
+        public static string BytesTotal
+        {
+            get { return _bytesTotal; }
+            set
+            {
+                _bytesTotal = value;
+            }
+        }
+
+        private static void OnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
+        {
+            BytesRecieved = e.BytesReceived.ToString();
+            BytesTotal = e.TotalBytesToReceive.ToString();
         }
     }
 }

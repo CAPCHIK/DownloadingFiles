@@ -11,6 +11,10 @@ namespace DownloadingFiles
     {
         public string Error => Model.Error;
         private string _url;
+        private bool _openDownloadedFile;
+        private RelayCommand updateCommand;
+
+
         public string URL
         {
             get { return _url; }
@@ -18,9 +22,10 @@ namespace DownloadingFiles
             {
                 _url = value;
                 OnPropertyChanged("Error");
+                OnPropertyChanged("LoadPercentage");
             }
         }
-        private bool _openDownloadedFile;
+        
         public bool OpenDownloadedFile
         {
             get { return _openDownloadedFile; }
@@ -29,7 +34,7 @@ namespace DownloadingFiles
                 _openDownloadedFile = value;
             }
         }
-        private RelayCommand updateCommand;
+
         public RelayCommand UpdateCommand
         {
             get
@@ -40,12 +45,13 @@ namespace DownloadingFiles
         }
         public void Button_Click(object obj)
         {
-            if (_url != null)
-            {
+            if (_url != null || _url != "")
                 Model.DownloadFile(_url, _openDownloadedFile);
-            }
             OnPropertyChanged("Error");
+            OnPropertyChanged("LoadPercentage");
         }
+
+        //public string LoadPercentage => Model.BytesRecieved + "/\n" + Model.BytesTotal;
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string prop = "")
