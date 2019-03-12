@@ -13,6 +13,7 @@ namespace DownloadingFiles
         private string _url;
         private bool _openDownloadedFile;
         private RelayCommand updateCommand;
+        private double progressBarValue;
 
 
         public string URL
@@ -35,6 +36,16 @@ namespace DownloadingFiles
             }
         }
 
+        public double ProgressBarValue
+        {
+            get => progressBarValue;
+            set
+            {
+                progressBarValue = value;
+                OnPropertyChanged(nameof(ProgressBarValue));
+            }
+        }
+
         public RelayCommand UpdateCommand
         {
             get
@@ -46,7 +57,7 @@ namespace DownloadingFiles
         public void Button_Click(object obj)
         {
             if (_url != null || _url != "")
-                Model.DownloadFile(_url, _openDownloadedFile);
+                Model.DownloadFile(_url, _openDownloadedFile, p => ProgressBarValue = p);
             OnPropertyChanged("Error");
             OnPropertyChanged("LoadPercentage");
         }

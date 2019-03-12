@@ -30,15 +30,15 @@ namespace DownloadingFiles
                 FilePath = saveFileDialog.FileName;
             }
         }
-        public static void DownloadFile(string url, bool openDownloadFile) 
+
+        public static void DownloadFile(string url, bool openDownloadFile, Action<double> progressNotify) 
         {
             try
             {
-                string HTMLSource = wc.DownloadString(url);
                 Error = "";
                 wc.Proxy = null;
                 SelectFolder(url);
-                wc.DownloadProgressChanged += new DownloadProgressChangedEventHandler(OnDownloadProgressChanged);
+                wc.DownloadProgressChanged += (o, args) => progressNotify(args.ProgressPercentage);
                 wc.DownloadFileAsync(new Uri(url), FilePath);
                 if (openDownloadFile == true)
                 {
