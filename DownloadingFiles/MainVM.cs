@@ -10,33 +10,25 @@ namespace DownloadingFiles
     class MainVM : INotifyPropertyChanged
     {
         public string Error => Model.Error;
-        private string _url;
-        private bool _openDownloadedFile;
+        private string url;
         private RelayCommand downloadCommand;
         private RelayCommand cancelCommand;
         private double progressBarValue;
-        private string bytesRecieved;
+        private string bytesReceived;
         private string bytesTotal;
         private string speed;
         private string time;
         public string URL
         {
-            get { return _url; }
+            get => url;
             set
             {
-                _url = value;
+                url = value;
                 OnPropertyChanged(nameof(Error));
             }
         }
         
-        public bool OpenDownloadedFile
-        {
-            get { return _openDownloadedFile; }
-            set
-            {
-                _openDownloadedFile = value;
-            }
-        }
+        public bool OpenDownloadedFile { get; set; }
 
         public double ProgressBarValue
         {
@@ -58,22 +50,22 @@ namespace DownloadingFiles
             }
         }
 
-        public string BytesRecieved
+        public string BytesReceived
         {
-            get => bytesRecieved;
-            set
+            get => bytesReceived;
+            private set
             {
-                bytesRecieved = value;
-                if (progressBarValue == 100 && _openDownloadedFile == true)
-                    Model.OpenFile(_url);
-                OnPropertyChanged(nameof(BytesRecieved));
+                bytesReceived = value;
+                if (progressBarValue >= 100 && OpenDownloadedFile)
+                    Model.OpenFile(url);
+                OnPropertyChanged(nameof(BytesReceived));
             }
         }
 
         public string Speed
         {
             get => speed;
-            set
+            private set
             {
                 speed = value;                
                 OnPropertyChanged(nameof(Speed));
@@ -83,43 +75,33 @@ namespace DownloadingFiles
         public string Time
         {
             get => time;
-            set
+            private set
             {
                 time = value;
                 OnPropertyChanged(nameof(Time));
             }
         }
 
-        public RelayCommand DownloadCommand
-        {
-            get
-            {
-                return downloadCommand ??
-                    (downloadCommand = new RelayCommand(DownloadButton_Click));
-            }
-        }
+        public RelayCommand DownloadCommand =>
+            downloadCommand ??
+            (downloadCommand = new RelayCommand(DownloadButton_Click));
 
-        public RelayCommand CancelCommand
-        {
-            get
-            {
-                return cancelCommand ??
-                    (cancelCommand = new RelayCommand(CancelButton_Click));
-            }
-        }
+        public RelayCommand CancelCommand =>
+            cancelCommand ??
+            (cancelCommand = new RelayCommand(CancelButton_Click));
 
-        public void DownloadButton_Click(object obj)
+        private void DownloadButton_Click(object obj)
         {
-            if (_url != null || _url != "")
-                Model.DownloadFile(_url, p => ProgressBarValue = p, b => BytesTotal = b,
-                    r  => BytesRecieved = r, s => Speed = s, t => Time = t);
+            if (url != null || url != "")
+                Model.DownloadFile(url, p => ProgressBarValue = p, b => BytesTotal = b,
+                    r  => BytesReceived = r, s => Speed = s, t => Time = t);
             OnPropertyChanged(nameof(Error));
         }
 
-        public void CancelButton_Click(object obj)
+        private void CancelButton_Click(object obj)
         {
-            if (_url != null || _url != "")
-                Model.CancelDownloading(p => ProgressBarValue = p, t => BytesTotal = t, r => bytesRecieved = r);
+            if (url != null || url != "")
+                Model.CancelDownloading(p => ProgressBarValue = p, t => BytesTotal = t, r => bytesReceived = r);
             OnPropertyChanged(nameof(Error));
         }
 
@@ -127,6 +109,18 @@ namespace DownloadingFiles
         protected virtual void OnPropertyChanged(string prop = "")
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(prop));
+        }
+        private static string PrettyBytes(double bytes)
+        {
+            if (bytes < 1024)
+                return bytes + "Б";
+            if (bytes < Math.Pow(1024, 2))
+                return (bytes / 1024).ToString("F" + 2) + "КБ";
+            if (bytes < Math.Pow(1024, 3))
+                return (bytes / Math.Pow(1024, 2)).ToString("F" + 2) + "МБ";
+            if (bytes < Math.Pow(1024, 4))
+                return (bytes / Math.Pow(1024, 5)).ToString("F" + 2) + "ГБ";
+            return (bytes / Math.Pow(1024, 4)).ToString("F" + 2) + "ТБ";
         }
     }
 }
