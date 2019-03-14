@@ -9,7 +9,7 @@ namespace DownloadingFiles
 { 
     class MainVM : INotifyPropertyChanged
     {
-        public string Error => Model.Error;
+        private Model model = new Model();
         private string _url;
         private bool _openDownloadedFile;
         private RelayCommand downloadCommand;
@@ -19,6 +19,10 @@ namespace DownloadingFiles
         private string bytesTotal;
         private string speed;
         private string time;
+
+
+        public string Error => model.Error;
+
         public string URL
         {
             get { return _url; }
@@ -65,7 +69,7 @@ namespace DownloadingFiles
             {
                 bytesRecieved = value;
                 if (progressBarValue == 100 && _openDownloadedFile == true)
-                    Model.OpenFile(_url);
+                    model.OpenFile(_url);
                 OnPropertyChanged(nameof(BytesRecieved));
             }
         }
@@ -111,7 +115,7 @@ namespace DownloadingFiles
         public void DownloadButton_Click(object obj)
         {
             if (_url != null || _url != "")
-                Model.DownloadFile(_url, p => ProgressBarValue = p, b => BytesTotal = b,
+                model.DownloadFile(_url, p => ProgressBarValue = p, b => BytesTotal = b,
                     r  => BytesRecieved = r, s => Speed = s, t => Time = t);
             OnPropertyChanged(nameof(Error));
         }
@@ -119,7 +123,7 @@ namespace DownloadingFiles
         public void CancelButton_Click(object obj)
         {
             if (_url != null || _url != "")
-                Model.CancelDownloading(p => ProgressBarValue = p, t => BytesTotal = t, r => bytesRecieved = r);
+                model.CancelDownloading(p => ProgressBarValue = p, t => BytesTotal = t, r => bytesRecieved = r);
             OnPropertyChanged(nameof(Error));
         }
 

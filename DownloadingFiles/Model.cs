@@ -12,13 +12,13 @@ using System.Threading;
 
 namespace DownloadingFiles
 {
-    public static class Model
+    public class Model
     {
-        public static WebClient wc = new WebClient();
-        public static Stopwatch sw = new Stopwatch();
-        public static string Error;
-        public static string FilePath;
-        public static void SelectFolder(string url)
+        public WebClient wc = new WebClient();
+        public Stopwatch sw = new Stopwatch();
+        public string Error;
+        public string FilePath;
+        public void SelectFolder(string url)
         {
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.InitialDirectory = "c:\\";
@@ -31,7 +31,7 @@ namespace DownloadingFiles
             }
         }
 
-        public static void DownloadFile(string url, Action<double> progressNotify, Action<string> bytesTotal, Action<string> bytesRecieved,
+        public void DownloadFile(string url, Action<double> progressNotify, Action<string> bytesTotal, Action<string> bytesRecieved,
             Action<string> speed, Action<string> time) 
         {
             try
@@ -61,11 +61,11 @@ namespace DownloadingFiles
                 Error = "Ошибка при скачивании! Проверьте URL\n и не забудьте указать путь";
             }
         }
-        public static void OpenFile(string url)
+        public void OpenFile(string url)
         {
             Process.Start(FilePath);
         }
-        public static void CancelDownloading(Action<double> progressNotify, Action<string> bytesTotal, Action<string> bytesRecieved)
+        public void CancelDownloading(Action<double> progressNotify, Action<string> bytesTotal, Action<string> bytesRecieved)
         {
             wc.CancelAsync();
             wc.Dispose();
@@ -73,7 +73,7 @@ namespace DownloadingFiles
             wc.DownloadFileCompleted += (o, args) => bytesTotal("Canceled.");
             wc.DownloadFileCompleted += (o, args) => bytesRecieved("");
         }
-        public static string ProgressChanged(object sender, DownloadProgressChangedEventArgs args)
+        public string ProgressChanged(object sender, DownloadProgressChangedEventArgs args)
         {
             if (args.BytesReceived < 1024)
                 return args.BytesReceived.ToString() + "Б";
@@ -87,7 +87,7 @@ namespace DownloadingFiles
                 return (args.BytesReceived / Math.Pow(1024, 4)).ToString("F" + 2) + "ТБ";
                 
         }
-        public static string ProgressTotal(object sender, DownloadProgressChangedEventArgs args)
+        public string ProgressTotal(object sender, DownloadProgressChangedEventArgs args)
         {
             if (args.TotalBytesToReceive < 1024)
                 return args.TotalBytesToReceive.ToString() + "Б";
@@ -100,11 +100,11 @@ namespace DownloadingFiles
             else
                 return (args.TotalBytesToReceive / Math.Pow(1024, 4)).ToString("F" + 2) + "ТБ";
         }
-        public static string DownloadingSpeed(object sender, DownloadProgressChangedEventArgs args)
+        public string DownloadingSpeed(object sender, DownloadProgressChangedEventArgs args)
         {
             return (args.BytesReceived / 1024 / 1024 /sw.Elapsed.TotalSeconds).ToString("F" + 2) + " МБ/СЕК";
         }
-        public static string DownloadingTime(object sender, DownloadProgressChangedEventArgs args)
+        public string DownloadingTime(object sender, DownloadProgressChangedEventArgs args)
         {
             return ((args.TotalBytesToReceive / (args.BytesReceived / sw.Elapsed.TotalSeconds))-sw.Elapsed.TotalSeconds).ToString("F" + 1) + "СЕК";
         }
