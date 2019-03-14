@@ -12,18 +12,20 @@ namespace DownloadingFiles
         public string Error => Model.Error;
         private string _url;
         private bool _openDownloadedFile;
-        private RelayCommand updateCommand;
+        private RelayCommand downloadCommand;
+        private RelayCommand cancelCommand;
         private double progressBarValue;
-
-
+        private string bytesRecieved;
+        private string bytesTotal;
+        private string speed;
+        private string time;
         public string URL
         {
             get { return _url; }
             set
             {
                 _url = value;
-                OnPropertyChanged("Error");
-                OnPropertyChanged("LoadPercentage");
+                OnPropertyChanged(nameof(Error));
             }
         }
         
@@ -46,24 +48,80 @@ namespace DownloadingFiles
             }
         }
 
-        public RelayCommand UpdateCommand
+        public string BytesTotal
+        {
+            get => bytesTotal;
+            set
+            {
+                bytesTotal = value;
+                OnPropertyChanged(nameof(BytesTotal));
+            }
+        }
+
+        public string BytesRecieved
+        {
+            get => bytesRecieved;
+            set
+            {
+                bytesRecieved = value;
+                if (progressBarValue == 100 && _openDownloadedFile == true)
+                    Model.OpenFile(_url);
+                OnPropertyChanged(nameof(BytesRecieved));
+            }
+        }
+
+        public string Speed
+        {
+            get => speed;
+            set
+            {
+                speed = value;                
+                OnPropertyChanged(nameof(Speed));
+            }
+        }
+
+        public string Time
+        {
+            get => time;
+            set
+            {
+                time = value;
+                OnPropertyChanged(nameof(Time));
+            }
+        }
+
+        public RelayCommand DownloadCommand
         {
             get
             {
-                return updateCommand ??
-                    (updateCommand = new RelayCommand(Button_Click));
+                return downloadCommand ??
+                    (downloadCommand = new RelayCommand(DownloadButton_Click));
             }
         }
-        public void Button_Click(object obj)
+
+        public RelayCommand CancelCommand
         {
-            if (_url != null || _url != "")
-                Model.DownloadFile(_url, _openDownloadedFile, p => ProgressBarValue = p);
-            OnPropertyChanged("Error");
-            OnPropertyChanged("LoadPercentage");
+            get
+            {
+                return cancelCommand ??
+                    (cancelCommand = new RelayCommand(CancelButton_Click));
+            }
         }
 
-        public string LoadPercentage => Model.BytesRecieved;
-        
+        public void DownloadButton_Click(object obj)
+        {
+            if (_url != null || _url != "")
+                Model.DownloadFile(_url, p => ProgressBarValue = p, b => BytesTotal = b,
+                    r  => BytesRecieved = r, s => Speed = s, t => Time = t);
+            OnPropertyChanged(nameof(Error));
+        }
+
+        public void CancelButton_Click(object obj)
+        {
+            if (_url != null || _url != "")
+                Model.CancelDownloading(p => ProgressBarValue = p, t => BytesTotal = t, r => bytesRecieved = r);
+            OnPropertyChanged(nameof(Error));
+        }
 
         public event PropertyChangedEventHandler PropertyChanged;
         protected virtual void OnPropertyChanged(string prop = "")
