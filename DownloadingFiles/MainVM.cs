@@ -125,8 +125,15 @@ namespace DownloadingFiles
 
         private void DownloadButton_Click(object obj)
         {
-            if (url != null || url != "")
+            if (url == null && url == "") return;
+            try
+            {
                 model.DownloadFile(url, OpenDownloadedFile);
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+            }
         }
 
         private void CancelButton_Click(object obj)
