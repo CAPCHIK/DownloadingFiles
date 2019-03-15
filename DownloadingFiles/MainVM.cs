@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace DownloadingFiles
-{ 
+{
     class MainVM : INotifyPropertyChanged
     {
-        public string Error => Model.Error;
+
         private string url;
         private RelayCommand downloadCommand;
         private RelayCommand cancelCommand;
@@ -18,16 +19,50 @@ namespace DownloadingFiles
         private string bytesTotal;
         private string speed;
         private string time;
+        private string error;
+        private readonly Model model;
+        private long totalBytes;
+
+        public MainVM()
+        {
+            model = new Model();
+            model.FileSizeChanged += bytes => BytesTotal = PrettyBytes(totalBytes = bytes);
+            model.DownloadBytesChanged += (bytes, time) =>
+            {
+                BytesReceived = PrettyBytes(bytes);
+                Speed = DownloadingSpeed(bytes, time);
+                Time = DownloadingTime(bytes, totalBytes, time);
+            };
+            model.ProgressPercentageChanged += percentage => ProgressBarValue = percentage;
+            model.DownloadComplete += () =>
+            {
+                BytesReceived = "";
+                BytesTotal = "";
+                Speed = "";
+                Time = "";
+                ProgressBarValue = 0;
+            };
+        }
+
+        public string Error
+        {
+            get => error;
+            private set
+            {
+                error = value;
+                OnPropertyChanged(nameof(Error));
+            }
+        }
         public string URL
         {
             get => url;
             set
             {
                 url = value;
-                OnPropertyChanged(nameof(Error));
+                OnPropertyChanged(nameof(URL));
             }
         }
-        
+
         public bool OpenDownloadedFile { get; set; }
 
         public double ProgressBarValue
@@ -43,7 +78,7 @@ namespace DownloadingFiles
         public string BytesTotal
         {
             get => bytesTotal;
-            set
+            private set
             {
                 bytesTotal = value;
                 OnPropertyChanged(nameof(BytesTotal));
@@ -56,8 +91,6 @@ namespace DownloadingFiles
             private set
             {
                 bytesReceived = value;
-                if (progressBarValue >= 100 && OpenDownloadedFile)
-                    Model.OpenFile(url);
                 OnPropertyChanged(nameof(BytesReceived));
             }
         }
@@ -67,7 +100,7 @@ namespace DownloadingFiles
             get => speed;
             private set
             {
-                speed = value;                
+                speed = value;
                 OnPropertyChanged(nameof(Speed));
             }
         }
@@ -93,16 +126,13 @@ namespace DownloadingFiles
         private void DownloadButton_Click(object obj)
         {
             if (url != null || url != "")
-                Model.DownloadFile(url, p => ProgressBarValue = p, b => BytesTotal = b,
-                    r  => BytesReceived = r, s => Speed = s, t => Time = t);
-            OnPropertyChanged(nameof(Error));
+                model.DownloadFile(url, OpenDownloadedFile);
         }
 
         private void CancelButton_Click(object obj)
         {
             if (url != null || url != "")
-                Model.CancelDownloading(p => ProgressBarValue = p, t => BytesTotal = t, r => bytesReceived = r);
-            OnPropertyChanged(nameof(Error));
+                model.CancelDownloading();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -121,6 +151,17 @@ namespace DownloadingFiles
             if (bytes < Math.Pow(1024, 4))
                 return (bytes / Math.Pow(1024, 5)).ToString("F" + 2) + "ГБ";
             return (bytes / Math.Pow(1024, 4)).ToString("F" + 2) + "ТБ";
+        }
+
+        public static string DownloadingSpeed(long received, TimeSpan time)
+        {
+            return ((double)received / 1024 / 1024 / time.TotalSeconds).ToString("F" + 2) + " МБ/СЕК";
+        }
+        public static string DownloadingTime(long received, long total, TimeSpan time)
+        {
+            var receivedD = (double) received;
+            var totalD = (double) total;
+            return ((totalD / (receivedD / time.TotalSeconds)) - time.TotalSeconds).ToString("F" + 1) + "СЕК";
         }
     }
 }

@@ -16,14 +16,52 @@ namespace DownloadingFiles
     {
         private readonly WebClient webClient = new WebClient();
         private readonly Stopwatch stopWatch = new Stopwatch();
-        
 
-        public event Action<double> FileSizeChanged;
-        public event Action<double, TimeSpan> DownloadBytesChanged;
+
+        public event Action<long> FileSizeChanged;
+        public event Action<long, TimeSpan> DownloadBytesChanged;
         public event Action<double> ProgressPercentageChanged;
         public event Action DownloadComplete;
 
-        private bool SelectFolder(string fileName, out string filePath)
+        public void DownloadFile(string url, bool openAfterDownload)
+        {
+            if (webClient.IsBusy)
+                throw new Exception("Данный клиент для скачивания занят");
+            try
+            {
+                var startDownloading = DateTime.UtcNow;
+                webClient.Proxy = null;
+                if (!SelectFolder(Path.GetFileName(url), out var filePath))
+                    throw DownloadingError();
+                webClient.DownloadProgressChanged += (o, args) =>
+                {
+                    ProgressPercentageChanged?.Invoke(args.ProgressPercentage);
+                    FileSizeChanged?.Invoke(args.TotalBytesToReceive);
+                    DownloadBytesChanged?.Invoke(args.BytesReceived, DateTime.UtcNow - startDownloading);
+                    if (args.ProgressPercentage >= 100 && openAfterDownload)
+                        Process.Start(filePath);
+                };
+                webClient.DownloadFileCompleted += (o, args) => DownloadComplete?.Invoke();
+                stopWatch.Start();
+                webClient.DownloadFileAsync(new Uri(url), filePath);
+            }
+            catch (Exception e)
+            {
+                throw DownloadingError();
+            }
+        }
+
+        public void CancelDownloading()
+        {
+            webClient.CancelAsync();
+            webClient.Dispose();
+            DownloadComplete?.Invoke();
+        }
+
+        private static Exception DownloadingError()
+            => new Exception("Ошибка при скачивании! Проверьте URL\n и не забудьте указать путь");
+
+        private static bool SelectFolder(string fileName, out string filePath)
         {
             var saveFileDialog = new SaveFileDialog
             {
@@ -37,43 +75,5 @@ namespace DownloadingFiles
             filePath = saveFileDialog.FileName;
             return true;
         }
-
-        public void DownloadFile(string url) 
-        {
-            if (webClient.IsBusy)
-                throw new Exception("Данный клиент для скачивания занят");
-            try
-            {
-                var startDownloading = DateTime.UtcNow;
-                webClient.Proxy = null;
-                if (!SelectFolder(url, out var filePath))
-                    throw DownloadingError();
-                webClient.DownloadProgressChanged += (o, args) =>
-                {
-                    ProgressPercentageChanged?.Invoke(args.ProgressPercentage);
-                    FileSizeChanged?.Invoke(args.TotalBytesToReceive);
-                    DownloadBytesChanged?.Invoke(args.BytesReceived, DateTime.UtcNow - startDownloading);
-                };
-                webClient.DownloadFileCompleted += (o, args) => DownloadComplete?.Invoke();
-                stopWatch.Start();
-                webClient.DownloadFileAsync(new Uri(url), filePath);
-            }
-            catch (Exception e)
-            {
-                throw DownloadingError();
-            }
-        }
-
-        public void CancelDownloading(Action<double> progressNotify, Action<string> bytesTotal, Action<string> bytesRecieved)
-        {
-            webClient.CancelAsync();
-            webClient.Dispose();
-            webClient.DownloadFileCompleted += (o, args) => progressNotify(0);
-            webClient.DownloadFileCompleted += (o, args) => bytesTotal("Canceled.");
-            webClient.DownloadFileCompleted += (o, args) => bytesRecieved("");
-        }
-
-        private Exception DownloadingError()
-            => new Exception("Ошибка при скачивании! Проверьте URL\n и не забудьте указать путь");
     }
 }
